@@ -12,8 +12,15 @@ var food = {
 };
 var r_left, r_right, r_up, r_down;
 var speed = 20;
+var tail = [];
 
 function update(){
+    // 꼬리의 위치가 바뀜
+    for(var i = tail.length - 1; i > 0; i--){
+        tail[i] = tail[i-1];
+    }
+    tail[0] = {x: head.x, y: head.y}
+    
     if (r_right === 1){head.x += speed;}
     if (r_left === 1){head.x -= speed;}
     if (r_up === 1){head.y -= speed;}
@@ -27,6 +34,8 @@ function eat(pos){
     
     d = Math.sqrt(dx * dx + dy * dy);
     if (d < 1){
+        //꼬리를 증가시킴
+        tail.push({x: null, y: null})
         return true;
     }
     else{
@@ -45,10 +54,34 @@ function drawHead(){
     ctx.fill();
 }
 
+function drawtail(){
+    // 꼬리 그리기
+    ctx.fillStyle = "gray";
+    for(var i = 0; i < tail.length - 1; i++)
+        ctx.fillRect(tail[i].x, tail[i].y, head.wh, head.wh);
+        ctx.fill();
+}
+
 function drawFood(){
     ctx.fillStyle = "red";
     ctx.fillRect(food.x, food.y, food.wh, food.wh);
     ctx.fill();
+}
+
+function collider(){
+    // 벽충돌시 멈추는 판정
+    if (head.x < 0 ) {
+        head.x = 0;
+    }
+    if(head.x + head.wh > vcanvas.width){
+        head.x = vcanvas.width - head.wh;
+    }
+    if (head.y < 0){
+        head.y = 0;
+    }
+    if (head.y + head.wh > vcanvas.height){
+        head.y = vcanvas.height - head.wh;
+    }
 }
 
 function gameLoop(){
@@ -57,8 +90,10 @@ function gameLoop(){
     if(eat(food) === true){
         newLocation();
     };
-    drawHead();
+    collider();
     drawFood();
+    drawtail();
+    drawHead();
 }
 
 function init(){
@@ -79,5 +114,16 @@ function set_key(){
     if (event.keyCode===38){r_up = 1;}
     if (event.keyCode===39){r_right = 1;}
     if (event.keyCode===40){r_down = 1;}
-};
+}
+function stop_key(){
+    if (event.keyCode===37){r_left = 0;}
+    if (event.keyCode===38){r_up = 0;}
+    if (event.keyCode===39){r_right = 0;}
+    if (event.keyCode===40){r_down = 0;}
+}
 document.onkeydown = set_key;
+document.onkeyup = stop_key;
+
+// git add .
+// git commit -m "messge"
+// git puhs origin master
