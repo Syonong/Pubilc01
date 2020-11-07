@@ -6,11 +6,14 @@ var head = {
     wh: 20,
     d: 0 // 각도
 };
-var food = {
+var food = [];
+/**
+    {
     x: 300,
     y: 300, 
     wh: 5
 };
+**/
 var r_left, r_right, r_up, r_down;
 var speed = 8;
 var tail = [];
@@ -51,6 +54,31 @@ function update(){
     if (r_down === 1) {
         head.y += speed;
     }**/
+    
+    if (head.x + head.wh > vcanvas.width){
+        head.x = vcanvas.width - head.wh;
+        head.d = 180 - head.d;
+    }
+    if (head.x - head.wh < 0){
+        head.x = 0 + head.wh;
+        head.d = 180 - head.d;
+    }
+    if (head.y + head.wh > vcanvas.height){
+        head.y = vcanvas.height - head.wh;
+        head.d = 360 - head.d;
+    }
+    if (head.y - head.wh < 0){
+        head.y = 0 + head.wh;
+        head.d = 360 - head.d;
+    }
+}
+
+function createFood(){
+    for (var i=0; i<30; i++){
+        food.push({x: Math.floor(Math.random() * vcanvas.width / speed) * speed,
+                   y: Math.floor(Math.random() * vcanvas.height / speed) * speed,
+                   wh: Math.random() * 5});
+    }
 }
 
 function eat(pos){
@@ -59,7 +87,7 @@ function eat(pos){
     var d;
     ctx.beginPath();
     d = Math.sqrt(dx * dx + dy * dy);
-    if (d < head.wh + food.wh){
+    if (d < head.wh + pos.wh){
         //꼬리를 증가시킴
         tail.push({x: null, y: null})
         return true;
@@ -69,16 +97,14 @@ function eat(pos){
     }
 }
 
-
-
-function newLocation(){
-    food.x = Math.floor(Math.random() * vcanvas.width / speed) * speed;
-    food.y = Math.floor(Math.random() * vcanvas.height / speed) * speed;
+function newLocation(params){
+    params.x = Math.floor(Math.random() * vcanvas.width / speed) * speed;
+    params.y = Math.floor(Math.random() * vcanvas.height / speed) * speed;
 }
 
 function drawHead(){
     ctx.beginPath();
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = "yellow";
     //ctx.fillRect(head.x, head.y, head.wh, head.wh);
     ctx.arc(0, 0, head.wh, 0, Math.PI * 2);
     ctx.fill();
@@ -106,18 +132,18 @@ function drawtail(){
     //ctx.fillStyle = "skyblue";
     for(var i = 0; i < tail.length - 1; i++){
         //ctx.fillRect(tail[i].x, tail[i].y, head.wh, head.wh);
-        ctx.fillStyle = 'rgb(&{255 - i * 30}, 0, 0)';
+        ctx.fillStyle = `rgb(${255 - i * 10}, 0, 0)`;
         ctx.beginPath();
         ctx.arc(tail[i].x, tail[i].y, head.wh, 0, Math.PI * 2);
         ctx.fill();
     }
 }
 
-function drawFood(){
+function drawFood(si){
     ctx.fillStyle = "red";
     ctx.beginPath();
     //ctx.fillRect(food.x, food.y, food.wh, food.wh);
-    ctx.arc(food.x, food.y, food.wh, 0, Math.PI * 2);
+    ctx.arc(si.x, si.y, si.wh, 0, Math.PI * 2);
     ctx.fill();
 }
 /**
@@ -140,11 +166,14 @@ function collider(){
 function gameLoop(){
     ctx.clearRect(0, 0, vcanvas.width, vcanvas.height);
     update();
-    if(eat(food) === true){
-        newLocation();
-    };
+    for (var i in food){
+        drawFood(food[i]);
+        if(eat(food[i]) === true){
+            newLocation(food[i]);
+    }
+}
+    
     //collider();
-    drawFood();
     drawtail();
     draw();
 }
@@ -156,6 +185,7 @@ function init(){
     //ctx.fillStyle = "black";
     //ctx.fillRect(head.x, head.y, head.wh, head.wh);
     //ctx.fill();
+    createFood();
     
     setInterval(gameLoop, 50);
 }
